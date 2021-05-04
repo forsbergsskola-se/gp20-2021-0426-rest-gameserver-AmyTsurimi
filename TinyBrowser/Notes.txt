@@ -1,0 +1,73 @@
+https://discord.com/channels/690251537926193166/752227812890640444/836872885657141258
+
+@Programming 20  Everybody that has problems even getting a first response from the web server, check this link.
+@Programming 20  Since too many are stuck on this, here's the solution to Part 1 to get you going with sending an HTTP 1.1 Request:
+// Connect to acme.com Server via TCP
+var tcpClient = new TcpClient("acme.com", 80);
+var stream = tcpClient.GetStream();
+// Get the bytes for our HTTP Request
+var bytes = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost: acme.com\r\n\r\n");
+// Send them over TCP
+stream.Write(bytes);
+
+Encoding.ASCII.GetBytes("Get /\r\n");
+
+Windows NewLine: "ABCD\r\nEFGH"
+Replace("\n","Z\n")
+Result on Windows: "ABCD\rZ\nEFGH"
+Replace("\r\n", "Z\r\n")
+Result on Windows: "ABCDZ\r\nEFGH"
+Windows Unix: "ABCD\nEFGH"
+Replace("\r\n", "Z\r\n")
+Windows Unix: "ABCD\nEFGH"
+Environment.NewLine <- provides the correct new line char for the current OS
+Problem: The file might have been saved on Windows and then copied to Mac
+Then it might still have \r\n
+Replace("\r\n", "\n")
+Replace("\n", "Z\n")
+Replace("\n", Environment.NewLine)
+\something characters
+Are called "Escaped Characters"
+Which means, that the symbol after the \ is not the literal one
+But a symbolic one
+For example: n = n ; \n = new line
+
+For everybody sending HTTP/0.9-Requests to acme.com:
+Acme does give a valid response (as in, it understands and speaks the protocol)
+BUT: Acme appears only to send you a pretty formatted message saying, that it wasn't able to provide you a webpage given the link that you've sent.
+Which appears to be either a bug, of a polite (and slightly scrambled) way of saying, don't use HTTP/0.9 :smile:
+So, you might have to go with HTTP/1.0 or HTTP/1.1 right away (there's barely a major difference, check out the slides once more, if you're insecure)
+
+I have heavily over-simplified the tasks here.
+In complete reality, there might be HTML-Elements like this:
+<a style="text-aligh: right" href="updates/">Updates.</a>
+<a href="updates/"><li>Updates.</li></a>
+<a href = "updates/"><li>Updates.</li></a>
+To simplify things, I expect you only to find the second one.
+And it's okay, if it then says <li>Updates.</li> in the console :slight_smile:
+any programmer that's interested in a more advanced task might take a look at regex.
+In regex, you can search for a string:
+"abcd"
+Which will match:
+"abcd" -> true
+"defabcd" -> true
+"defabcdef" -> true
+"ab cd" -> false
+
+But, you may also use \s* to say, that it may contain 0-n whitespaces at a place.
+Or \s+ to say, that it may contain 1-n whitespaces at a place.
+For example:
+"ab\s+cd"
+Will match:
+"abcd" -> false
+"ab cd" -> true
+"ab       cd" -> true
+
+
+For example:
+"ab\s*cd"
+Will match:
+"abcd" -> true
+"ab cd" -> true
+"ab       cd" -> true
+"abc d" -> false
