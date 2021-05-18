@@ -1,19 +1,32 @@
-# GP20-2021-0426-Rest-Gameserver
+# GP20-2021-0419-Realtime-Gameserver
 
 ## Goal of this Assignment
-The goal of this assignment is to introduce you to developing REST-APIs using `C#`, `HTTP`, `JSON` and `ASP .NET Core`\
+The goal of this assignment is to introduce you to Game-Server-Development using `C#` and the `TCP` and `UDP` Protocols.\
 In total, our steps will include:
-- An Acme.com Weblink Browser
-- Exploring an existing REST-API through HTTP
-- Building a Bikesharing Console Application
-- Building a REST Game App
+- Create a small Time-Server using TCP Technology
+- Build a Unity Client to connect to that server and receive the time
+- Build a small Word-Game-Server using UDP Technology
+- Build a Unity Client to connect to that server and play the game
+- Build a Game similar to Agar.io
+  - A game server that handles multiple player states
+  - A unity client that 
+    - can display those players' states
+    - and forward any input to the server
 
 ## Grading
 |Grade  |  Requirement |
 |-------|:-------------|
-|Failed (F)| Everyone\* |
+|Summa Cum laude (A*)| Agar.io playable in Multiplayer.\*\*|
+| Magna Cum Laude (A)| Agar.io playable with Server. Other players may behave glitchy.\*\*|
+|Cum Laude (B)| 6 Points of Agar.io done. (or Bonus for Clean Code\*)|
+|Passed (C)| 3 Points of Agar.io done. (or Bonus for Clean Code\*)|
+|Barely Passed (D)| UDP OpenWord-MMO Server and Client implemented. |
+|Insufficient (E)| TCP Time Server and Client implemented. |
+|Failed (F)| |
 -------------------------------
-\*Just kidding, of course. I'm still working on this :P
+Each of these grades expects the previous requirements as well as its own requirements to be fulfilled.\
+\* Bonus for Clean Code requires ALL previous requirements to be fulfilled as well as the Code to be tidy and cleaned up.\
+\*\* For these grades, it's more important to show that the network communication is happening. Gameplay goes second.
 
 
 ## Prerequisites / Requirements
@@ -22,273 +35,260 @@ In total, our steps will include:
 - Install Unity Hub & Unity.
 
 ## Remarks
-- In the first Exercise, we are not using any HTTP-Classes, but manually using the HTTP-Protocol with a TCP-Client for educational purposes.
+- In the first four exercises, we are not using any advanced classes for working with `Streams`
+  - it is slightly tedious, but it will teach you about how `byte[]` can be used as buffers
+- Refer to the Slides `030 - Internet` for details on TCP / UDP.
 
 
-## Part 1 - Tiny Browser:
+## Part 1 - Time Server:
 
-<img width="579" alt="image" src="https://user-images.githubusercontent.com/7360266/116148852-bcc7df80-a6e1-11eb-9282-370e37c97fc6.png">
-
+<img width="250" alt="image" src="https://user-images.githubusercontent.com/7360266/115594022-8cdd9e00-a2d5-11eb-8dd3-d9ec6b7ba7c6.png">
 
 
 ### Goal
-To have a Acme.com Weblink Browser that prints the current page title as well as a navigatable list of all Links that can be found on the page.
+To have a time-server, where anyone can connect to using TCP to retrieve the current date and time.
 
 ### Preparing a Project
-Create a folder named `TinyBrowser`\
+Create a folder named `TimeServer`\
 Open the Terminal in that Folder
+- On Windows, you can Use `cmd` or `PowerShell`.
+- On Mac, use the `Terminal`-Application.
+
+One way would be to open the Terminal and type in `cd PATH`, for example: `cd C:/Users/...`.\
+Make sure to put quotation marks around the path or to escape it, if you have white spaces in it.
+
+Now, validate, that you are in the correct folder, by using `pwd`\
 Now, use the command `dotnet new console`\
 If it says `dotnet not found`, you have probably not installed .NET Core 5 SDK, yet.\
 Else, this command should have created a new C# Project for you. You can go ahead and open the `.csproj`-File in your IDE.\
 
-Add a `.gitignore` in your `TinyBrowser`-Folder that ignores anything you don't want to commit.\
+Before continuing work, we should create a `.gitignore` in your `TimeServer`-Folder that ignores anything we don't want to commit.\
 For C# Console Projects, that's at least the `/bin/` and `/obj/`-Folders.\
-Afterwards, you may safely go ahead and create a new commit `adds tiny browser project`
+You might find a nice C# Console / Rider / Visual Studio `.gitignore`-Template on the web.\
+Afterwards, you may safely go ahead and create a new commit `adds time server project`
 
 ### Implementation
-- You will need: 
-- The `TcpClient`-class which can be created by using its constructor together with arguments for the host name as well as the port number.
-  - `GetStream` again gets you the current stream used for the client. It returns a `Stream`.
+You will need: 
+- The `TcpListener`-class found in `System.Net.Sockets`.
+  - `Start` will start the listener.
+  - `AcceptTcpClient`-Method handles the acknowledgement of new connections for you. It returns a `TcpClient`.
+  - `Stop` needs to be called when you do not want to listen for packets on this port anymore.
+- The `TcpClient`-class is returned by `AcceptTcpClient`.
+  - `GetStream` gets you the current stream used for the client. It returns a `Stream`.
   - `Close` needs to be called when you are done using the `TcpClient`.
 - The `Stream`-class is returned by `GetStream`
-  - `Write` allows you to send Bytes over the socket. (Consider using `StreamWriter` though)
-  - `Read` allows you to read Bytes over the socket. (Consider using `StreamReader` though)
+  - `Write` allows you to send Bytes over the socket.
   - `Close` needs to be called when you are done sending bytes over the stream.
-- The `StreamWriter`-class has a constructor that you need to pass a `Stream` into.
-  - `Write` allows you to send a string or any other data over the socket.
-- The `StreamReader`-class has a constructor that you need to pass a `Stream` into.
-  - `ReadToEnd` allows you to read a full string from the socket.
+- `DateTime.Now` Gives you the current Date & Time.
+  - `ToString` returns you a nicely formatted `string`.
 - `Encoding.ASCII.GetBytes` Can convert a `string` to ASCII-`byte[]` for you.
-- `Encoding.ASCII.GetString` Can convert a `byte[]` to a `string`.
-- `string`
-  - `IndexOf(string value, int startIndex)` 
-    - Can Find the Index at which a `string` can be found within another. 
-    - Returns `-1` if no results were found.
-    - e.g.: "Hello World".IndexOf("ll") will return 2.
-    - e.g.: "Hello World".IndexOf("Planet") will return -1.
-  - `Substring(int startIndex, int length)`
-    - Returns the substring of a string between character number `startIndex` and `statIndex + length`.
-    - e.g.: "Hello World".Substring(3, 4) will return "lo W";
-  - `Path.Combine(string a, string b)`
-    - Returns a combined path of a and b. handles dot-notiation `.` and `..` correctly automatically.
 
 So, what is our server supposed to do?
-- Send a TCP Request to acme.com using Port 80
-- Using the HTTP Protocol
-  - I recommend using HTTP 1.1.
-  - Make sure to follow the Exact guidelines.
-  - Every line is supposed to end with `CRLF` (carriage return). In C# that's `"\r\n"`
-  - This is, what a HTTP/1.1-Request might look like:
-```
-GET / HTTP/1.1
-Host: google.com
+- Open a Socket (Listen on a Socket for TCP Messages)
+- Then, for as long as you want the server to run (Maybe, start with forever, or rather until you Stop Execution in Rider)
+  - Accept a new Client that tries to connect (It will automatically wait for that to happen)
+  - Get a data stream from that client that allows Reading and Writing data
+  - On that stream, send the current DateTime Encoded into Bytes (You may as well just send `"Hello"` first)
+  - Close the stream
+  - Close the client
 
-```
-  - Especially don't forget the empty line at the end of your request and the Host-Header :)
-- Use a TCP Client.
-- Get the Stream.
-- Write a valid HTTP-Request to the Stream.
-- Fetch the response from the Website
-- Search the respone for an occurence of `<title>
-    - `<title>` is the start tag of an HTML `title`-Element used for page titles (visible on tabs) in browsers
-    - `</title>` is the end tag of an HTML `title`-Element
-    - Everything inbetween is the HTML-Content of the Element
-    - And in this case, the title of the website
-    - Print that string (between `<title>` and `</title>`) to the console.
-- Search the response for all occurences of `<a href ="`
-  - One sample: `<a href="auxprogs.html">auxiliary programs</a>`
-  - Without going into too much detail:
-    - `<a>` is the start tag of an HTML `hyperlink`-Element used for clickable links in browsers
-    - `href="..."` is an HTML url-Attribute used to give the URL to the Hyperlink
-    - `</a>` is the end tag of an HTML `hyperlink`-Element
-    - Everything inbetween is the HTML-Content of the Element
-    - And in this case, describes the Display Text of the Hyperlink
-- For each occurence:
-  - Find all letters until the next `"`-symbol.
-  - These letters define the local URL to the destination
-  - Remember this, so you can navigate to that URL, if the User decides to follow this link
-  - Navigate to the next `>`-symbol, so you find the end of the start tag.
-  - Every letter until the next occurence of `</a>` are part of the display text.
-- Now, when you have all the information (display text & url for each link)
-- Print them all to the console
-  - Recommendation: Use an iterator i, starting at 0.
-  - Iterate over a list of all information that you have stored before.
-  - Print: `%INDEX%: %DISPLAYNAME% (%URL%)`, e.g.: `3: auxiliary programs (auxprogs.html)`
-- Ask the user for Input
-  - it should be a Number between 0 and the number of options
-  - Follow the link that the user wants to follow and start at the beginning of the application again
-  - (Send a TCP Request to acme.com...)
-  - There is a few cases of URLs to consider. Some of them might be links, but...:
-    - not to another web page, e.g. `<a href="image.png">` might be a link to an image.
-      - i suggest skipping these links
-    - to another host, e.g. `<a href="http://google.com/search/settings">`
-      - replace the host with `google.com` and the path with `/search/settings/`
-    - to a local url, e.g. `<a href="search"> when currently being at host `acme.com` and the path `/hello/world/`
-      - keep the host and replace the path with `/hello/world/search/`
-    - to a parent url, e.g. `<a href="../another"> when currently being at host `acme.com` and the path `/hello/world/`
-      - keep the host and simply replace the path with `/hello/world/../another/` or `/hello/another/`
+This means, that whenever someone connects via TCP, our Server will send the current Date and Time and close the connection.\
+Neat little TimeServer.\
+You can Run the Code within Rider using the Play Button.\
+Not much will happen, yet, though.\
+We need a Client to Connect in order to see, whether everything works.\
+If you install `netcat` on Windows, or if you're on a Mac or Linux System:\
+You can use `nc -v 127.0.0.1 44444` where `127.0.0.1` is the server's ip and `44444` is the server's port number.
+To test your Timeserver.
+
+<img width="706" alt="image" src="https://user-images.githubusercontent.com/7360266/115593725-28224380-a2d5-11eb-9541-548f4f52ce16.png">
 
 
 
-
-### Bonus:
-- Prettify the Output: Replace any link description that's longer than 15 chars with a shorter version of the first and last 6 chars and ... in the middle.
-  - e.g.: `"HelloMyPrettyWorld"` becomes `"HelloM..yWorld"`
-- Implement a Back-Button: If the User inputs 'b' for Back, go back (to the previously visited Website.
-  - Make sure, to not go forward, when going back twice :)
-- Implement a Forward-Button: If the User inputs 'f' for Forward, go forward.
-  - Make sure, that there is a website to go forward to :)
-- Implement a Refresh-Button: If the User inputs 'r' for Refresh, refresh the page.
-  - Make sure, that this won't spam the 'go back' history.
-- Implement a History-Button: If the User inputs 'h' for History, he can see websites that he has visited.
-  - As well as the date, when the page was opened.
-  - If the User visits Website A, then B, then goes back to A, the History should show A, B, A. Not only A.
-  - In other words, this history has to be separate from the Back-History.
-- Implement a Goto-Button: If the User inputs 'g' for Goto, he can afterwards enter a URL of his own.
-- Investigate options of using `XMLReader` instead of searching the `HTML`-Response manually.
-  - Do this optional (as in replacable with interfaces)
-  - So that I can see, that you also got a solution working
-  - Where you manually search the string
+### Considerations:
+- What will happen, if you try to listen on a port that is already in use?
+- How can you find out, what ports are currently listened on on your computer?
+- What could in total go wrong?
 
 
-## Part 2: GitHub Explorer
+## Part 2 - TCP Client:
 
-<img width="703" alt="image" src="https://user-images.githubusercontent.com/7360266/116456208-46062000-a862-11eb-8bd0-566e7939c265.png">
+<img width="361" alt="image" src="https://user-images.githubusercontent.com/7360266/115593918-6a4b8500-a2d5-11eb-9b06-65a67958089b.png">
 
 
 ### Goal
-To have a small GitHub Repository Browser by accessing GitHub's public REST API to receive information.
+Having a Unity Client that is able to create a TCP Connection to our server.\
+In order to request the current Date & Time and Display it to the User.
 
 ### Preparing a Project
-Create a folder named `GitHubExplorer`\
-Open the Terminal in that Folder
-Now, use the command `dotnet new console`\
-Add a `.gitignore` in your `GitHubExplorer`-Folder that ignores anything you don't want to commit.\
-For C# Console Projects, that's at least the `/bin/` and `/obj/`-Folders.\
-Afterwards, you may safely go ahead and create a new commit `adds github explorer project`
+Create a Unity 2D Project and name it `Agario`.\
+We will reuse this project for all of our game server test scripts.\
+Do not forget to add a `.gitignore` to this Folder.
 
-### Preparing REST-API Access
-
-<img width="813" alt="image" src="https://user-images.githubusercontent.com/7360266/116474404-bc158180-a878-11eb-8368-729a863c06bc.png">
-
-In your user-settings (https://github.com/settings/tokens/new), you'll have to create a Personal Access Token. This is the easiest way to access your APIs later on.
-
+### Preparing the Scene
+We need a `Canvas`, a `Text` for the Time-Output and a `Button` that the user can click in order to request the time.\
 
 ### Implementation
-- You will need: 
-- The `HttpClient`-class which can be created by using its constructor. It is used for making Http-Requests.
-  - `DefaultRequestHeaders.Add` can be used to accept default headers that you want all your requests to have.
-  - `Dispose` needs to be called when you are done using the `HttpClient`.
-  - `Send` and `SendAsync` can be used to send an `HttpRequestMessage` and receive a `HttpResponseMessage`.
-- The `HttpRequestMessage`-class can be created by using its constructor
-  - The `HttpMethod`-argument defines the HTTP-Method that you are calling. We will mostly, or exclusively use `HttpMethod.Get`
-  - The `requestUri`-argument needs to point at the REST API's endpoint.
-  - The `Headers.Add`-Method can be used to add headers.
-    - e.g. `request.Headets.Add("Content-Language", "se");` would add a header requesting Swedish Content-Language.
-  - The `Content`-Property can be used to assign a Body to your HTTP request.
-    - The `StringContent`-class takes a string in its constructor and enables you to add a string as a HTTP request's body.
-- The `HttpResponseMessage`-class contains all sorts of information that has been sent as a response.
-  - `StatusCode` contains the HTTP-StatusCode, e.g. `200: OK`
-  - `Headers` contains all HTTP-Headers as Key-Value-Pairs.
-  - `response.Content.ReadAsStream()` can be used to receive a stream for the HTTP-Body of the response.
-- The `StreamReader`-class has a constructor that you need to pass a `Stream` into.
-  - `ReadToEnd` allows you to read a full string from the stream.
-- `JsonSerializer.Deserialize<T>(string jsonText)` Can convert a `string` to a C#-class of type `T` for you.
-  - It requires, that you create a class that matches the response structure.
-  - All fields that are returned should exist as a public property with getter and setter.
-  - e.g.: Response: `{"name":"Marc Zaku", "job": "Teacher"}` 
-  -       Class: `public class UserResponse{public string name{get;set;} public string job {get; set;}}
-  -       Use: `var userResponse = JsonSerializer.Deserialize<UserResponse>(responseJsonText);`
+You will need: 
+- The `TcpClient`-class which can be created by using its constructor together with arguments for the ip address as well as the port number.
+  - `GetStream` again gets you the current stream used for the client. It returns a `Stream`.
+  - `Close` needs to be called when you are done using the `TcpClient`.
+- The `Stream`-class is returned by `GetStream`
+  - `Read` allows you to read Bytes over the socket.
+  - `Close` needs to be called when you are done sending bytes over the stream.
+- `Encoding.ASCII.GetBytes` Was able to Convert a `string` to `byte[]`.
+  - Try to find out, what other method might be able to convert `byte[]` to a `string`. 
 
-So, what is our GitHub Explorer supposed to do?
-- Ask the User for a User Name that he'd like to explore.
-- Send a HTTP Request to `https://api.github.com/users/{username}` (replace {username} with the user input).
-- You can read on how to authenticate over REST API over here: https://docs.github.com/en/rest/guides/getting-started-with-the-rest-api
-  - In short: you will need a Header with the key `Authorization` and the value `token {yourtoken}`
-  - You want to be authenticated with all Requests. Consider using DefaultRequestHeaders :)
-- You can read on the API over here: https://docs.github.com/en/rest/reference/users#get-a-user
-- The Response-Object is defined there as well.
-- Among others, it contains the fields `name` and `company` which you are able to parse using the JSON-Parse.
-  - As a reference, check out above sample on `JsonSerializer`.
-- You will also find all other APIs documented over there :)
+Create a class named `RequestServerTime` that inherits from `MonoBehavior` and put said Script on a `GameObject` with the same name.\
+Create a public instance method named `SendRequest` and call that method on the `Button`-Component that you have created before.\
+
+Now:
+- Use the `TcpClient`-class together with the correct port number (the same port number used in Part 1 on the `TcpListener`)\
+= Again, call `GetStream` on that client.\
+- On that `Stream`, you can call `Read` to read information.
+- It will return `byte[]`, which you need to convert to a `string` again.
+  - If you think about how you converted a `string` to `byte[]`, you might come up with a solution to this problem.
+- Outut the converted string to the `Text` that you have placed in your scene.
+  - Come up with a solution of how to get a reference to said `Text`-Component.
 
 
-### Suggested Features:
-#### Social Features:
-These features should allow you to inspect your own as well as other's user's GitHub profiles, view their repositories (with a few stats on their repositories), as well as their oganizations. And look at an organization's members, to view their profiles and repositories and so forth. They teach you how to fetch and visualize information and how data is linked in REST APIs.
-- Showing a User's Profile
-- Listing a User's Repositories
-- Listing a User's Organizations
-  - Listing an Organization's Members (make them visitable)
-  - Listing a User's Repositories
+## Part 3 - OpenWord-MMO-Server
 
-#### Issues & Commenting:
-These features should allow you to create, inspect and close an issue and to view an issue's comments and add, update and delete them. They teach you how different HTTP-Methods are used for getting, creating, updating and deleting data on a REST API.
-- Listing a Repository's Issues
-- Creating an Issue
-- Closing an Issue (PATCH)
-    - Listing all Comments on an Issue
-    - Commenting on an Issue
-    - Deleting a Comment on an Issue
-    - Editing a Comment on an Issue
+<img width="482" alt="image" src="https://user-images.githubusercontent.com/7360266/115595752-9536d880-a2d7-11eb-84d2-21dffa25aa84.png">
 
 
-### Bonus:
-Develop a proper interface for all of your interactions with GitHub's Rest API.
-Do not make any HTTP-Requests outside of those interfaces.
-Imagine something like this:
+### Goal
+Creating an Open Game Server for a small Word Game.\
+Players can send Words to the Server that builds them into sentences and sends the full sentence back.\
+Clients do not have to explicitly connect to the Game. They can simply participate by sending data to the Server.\
 
+Rules:
+- The server can receive any segments sent to its Port via UDP.
+  - It only allows a single word to be sent at a time.
+    - How can you validate, that only one word was sent?
+  - Also, it only allows words to have up to 20 characters per word.
+    - How can you validate, that the word is not too long?
+- It remembers the text that was sent before and adds the new word, that was sent just now, after a whitespace behind it.
+And it every time sends the whole text back to the client.
+  - ClientA: -> "Hi" -> Server -> "Hi" -> ClientA
+  - ClientB: -> "Welcome" -> Server -> "Hi Welcome" -> ClientB
+  - ClientA: -> "World" -> Server -> "Hi Welcome World" -> ClientA
+
+### Preparing a Project
+You need to create a new Folder named `./OpenWord-MMO`.\
+Then use `dotnet new console` in that directory to create another console project.\
+Ahem, `.gitignore`!
+
+### Implementation
+You will need:
+- The `UdpClient`-class which can be found in `System.Net.Sockets`.
+  - The constructor in which you can pass a port number. 
+  - The `Receive(ref remoteEndPoint)`-Method to receive data from that socket.
+    - The return type is `byte[]` and gives you the information that was received.
+    - The `ref remoteEndpoint`-Argument will be filled by the method to contain the EndPoint (IP+Port) that has sent you the packet.
+    - The value that `ref remoteEndpoint` when you give it into this method does not matter.
+  - The `Send(bytes, bytesLength, remoteEndpoint)`-Method to send data on that socket.
+    - `bytes` and `bytesLength` contain a `byte[]` of your data that you want to send, as well as the length of said array.
+    - `remoteEndpoint` should be the address of the remote that you want to send data to.
+
+What is your server supposed to do?
+- Store the complete message in a variable.
+- Create a `UdpClient` with a Port of your choice.
+- While you want the server to run (maybe, forever? Then use `true`)
+  - `Receive` data from that `UdpClient`
+  - Validate the data that you have received according to your server's rules:
+    - only one word, not longer than 20 characters, ...
+  - If it is not valid, handle the error somehow.
+  - If it is valid:
+    - Add the new word with a whitespace to your complete message.
+    - `Send` your complete message over your `UdpClient` by passing in your message converted to bytes. And sending it to the `IPEndPoint` received by the `Receive`-Method as a `ref`-Parameter.
+- `Close` everything when we're done.
+
+Details:\
+You need to create a new `System.Net.Sockets.UdpClient` and pass it a port number that you want to use.\
+For example `11000`.\
+Now, the way, this API works, is:\
 ```cs
-public interface IGitHubAPI {
-   List<Issue> GetIssues(string userName, string repositoryName);
-   Issue CreateIssue(string userName, string repositoryName, string title, string description);
-}
-
-void Main(){
-   IGitHubAPI gitHubAPI = new GitHubAPI();
-   var issues = gitHubAPI.GetIssues("marczaku","GP20-2021-0426-Rest-Gameserver");
-}
+var remoteEP = new IPEndPoint(IPAddress.Any, 11000); 
+var data = udpClient.Receive(ref remoteEP);
 ```
 
-Now, take your API even one step further. 
-Wrap all your API's return values into objects that do not only contain data.
-But also methods to call the RESTful API.
-Imagine something like this:
+The IP filters, what IP addresses we want to filter on.\
+It is passed as a ref parameter, so that the Receive Function can change its value.\
+When we receive data, the remoteEP will actually contain the IP Address and Port Number of whoever just sent us bytes.\
+Therefore, we can use it to send back information.
 
-```cs
-public interface IGitHubAPI {
-   IUser GetUser(string userName);
-}
+To respond, you can use `udpClient.Send(bytes, bytesLength, remoteEP);` to send a response.
 
-public interface IUser {
-   IRepository GetRepository(string repositoryName);
-   string Name {get;}
-   string Location {get;}
-}
+Do this all endlessly in a loop and your Server should run until the end of our solar system :)
 
-public interface IRepository {
-   List<IIssue> GetIssues();
-   string Name {get;}
-   string Description {get;}
-}
+Well, our UDP Server is standing.
+You can Run it using the Play Button in Rider.
 
-void Main(){
-   IGitHubAPI gitHubAPI = new GitHubAPI();
-   var user = gitHubAPI.GetUser("marczaku");
-   var repository = user.GetRepository("GP20-2021-0426-Rest-Gameserver");
-   var issues = repository.GetIssues();
-}
-```
-
-Do you see the differences and improvements in these implementations?
-Do you only see Advantages, or are there also disadvantages?
+Again, it won't do much, until someone sends us info.
+You can use `nc -u 127.0.0.1 11000` in the Terminal to connect to your server and send text.
 
 
+## Part 4 - UDP Client:
 
-## Part 3: Lame-Scooter
+<img width="958" alt="image" src="https://user-images.githubusercontent.com/7360266/115594257-cf06df80-a2d5-11eb-91ba-225dd29ef2b6.png">
 
-- TBD
 
-## Part 4: 
+### Goal
+We want to develop a Client in Unity in which we can enter a Word into an Input-T
 
-- TBD
+Now, in Unity, you’ll have to do it the other way round.
+Now, you should send a word to your OpenWord-MMO-Port.
+To do that, you need an `Input`-`TextField` And a Send-`Button` to send the Input from the Text-Field.\
+When it is pressed:\
+You need to create another `UDPClient` on a port of your choice.\
+You need to first `Send` Bytes.\
+And then `Read` for a response.\
+And print the response to your Output.
+
+Remember, that the GameServer only accepts Single Words with less than 20 characters?\
+Test, what happens, if you try to enter two words, or a word of 30 characters size?\
+What happens, if you send an empty text?\
+What do you want to happen?
+
+Bonus: In the Unity Client, show a Popup-Message whenever an Error was received.\
+So, whenever the server decided, that the input was not okay.
+
+
+## Part 5 - Agar.io
+
+For the last part, we are going to implement what we got for implementing our own version of Agar.io
+
+Now, this will be a bit exciting.
+We need a lot of features.
+
+The idea of the game is:
+The Game has a certain Field Size, e.g. 100x100. `FIELD_SIZE`
+All Players need to move within that Field Size. `CLAMP_POSITION`
+
+Now, Players need to be able to Connect. `CONNECT_GAME`
+And Spawn in a random location. `PLAYER_SPAWN`, `RANDOM_POSITION`
+And Disconnect. `DISCONNECT_GAME`
+
+While they are Connected:
+They have the camera attached to themselves. `FOLLOW_CAMERA`
+They see themselves as a Circle. `PLAYER_VISUAL`
+They are able to Move Around (and pretty much constantly moving). `PLAYER_INPUT`
+The players always move towards the Mouse. `MOUSE_POSITION`, `VECTOR_DIRECTION`
+But if you are unsure on how to implement that in Unity, you might as well start with WASD controls for now. `WASD_INPUT`
+
+Also, the Game Server spawns small Orbs randomly over the Map (within the Map’s bounds) every x seconds. `SPAWN_ORBS`, `RANDOM_POSITION`, `UPDATE_LOOP`
+
+The players, when touching those orbs, collect them. This will increase their score by one. And the score also increases their appearance (their size). `COLLECT_ORB`, `UPDATE_VISUALS`, `INCREASE_SCORE`
+
+Now, the most interesting part:
+Players can eat each other by fully overlapping each other. `DISTANCE_CHECK`
+The smaller player gets eaten and starts with a score of zero at a random location again. `PLAYER_RESPAWN`
+The larger player gets the other player’s score added to his own. `INCREASE_SCORE`
+
+A few difficult challenges:
+How to update a player’s position and score to other players? `OTHER_PLAYERS_BROADCAST` `CURRENTLY_CONNECTED_PLAYERS`
+Can you display a small leaderboard? `PLAYER_LEADERBOARD`
+Can you show the players’ names on their players? `PLAYER_NAMES`
+Can you add Cheat Protection? `CHEAT_PROTECTION`
+How do you handle Lags? Do players get stuck and then teleport? Can you somehow `INTERPOLATE`?
