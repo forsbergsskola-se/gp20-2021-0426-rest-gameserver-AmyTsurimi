@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
+using TinyBrowser;
 namespace TinyBrowser
 {
     public static class ServerBrowser
@@ -16,7 +17,8 @@ namespace TinyBrowser
         static NetworkStream networkStream;
         static string uri = "/";
         static string request;
-        
+        static LinkList[] webAdressList;
+
         public static void SBrowser()
         {
             Console.WriteLine("Insert Web Adress here");
@@ -48,7 +50,6 @@ namespace TinyBrowser
             WebRequest();
             var webReader = WebReader();
             Console.WriteLine($"Title: {WebTitle(webReader)}");
-
 
             Console.ReadKey();
         }
@@ -86,17 +87,6 @@ namespace TinyBrowser
             var lastIndex = answer.IndexOf(last, StringComparison.OrdinalIgnoreCase);
 
             return answer[firstIndex..lastIndex];
-        }
-        static void WebLinks()
-        {
-            Console.WriteLine($"There is (Link[].length) amount of links on this web.");
-            Console.WriteLine($"Do you want to see all these Links?");
-            Console.WriteLine("[1] Yes, [0] No");
-            var input1 = int.Parse(Console.ReadLine());
-            if (input1 == 1)
-            {
-
-            }
         }
     }
 }         
