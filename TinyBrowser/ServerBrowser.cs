@@ -3,9 +3,10 @@ using System.IO;
 using System.Net.Sockets;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 namespace TinyBrowser
 {
-	public static class ServerBrowser
+    public static class ServerBrowser
 	{
         static string host = "www.acme.com";
         static TcpClient tcpClient;
@@ -15,6 +16,7 @@ namespace TinyBrowser
         static NetworkStream networkStream;
         static string uri = "/";
         static string request;
+        
         public static void SBrowser()
         {
             Console.WriteLine("Insert Web Adress here");
@@ -45,7 +47,9 @@ namespace TinyBrowser
             TcpConnect();
             WebRequest();
             var webReader = WebReader();
-            Console.WriteLine($"{WebTitle(webReader)}");
+            Console.WriteLine($"Title: {WebTitle(webReader)}");
+
+
             Console.ReadKey();
         }
         static void TcpConnect()
@@ -83,39 +87,16 @@ namespace TinyBrowser
 
             return answer[firstIndex..lastIndex];
         }
-	}
-}
-            /*
-            streamWriter.Write(request);
-            streamWriter.Flush();
-            var streamReader = new StreamReader(networkStream);
-            var result = streamReader.ReadToEnd();
-            //Console.WriteLine(result); 
-
-            var uriBuilder = new UriBuilder(null, host);
-            uriBuilder.Path = uri;
-            Console.WriteLine($"Opened {uriBuilder}");
-            // ======= FindTextBetweenTags Function START ========
-            var titleTag = "<title>";
-            // Find the start of the <title>-Tag
-            var titleIndex = result.IndexOf(titleTag);
-            string title = string.Empty;
-            if (titleIndex != -1)
+        static void WebLinks()
+        {
+            Console.WriteLine($"There is (Link[].length) amount of links on this web.");
+            Console.WriteLine($"Do you want to see all these Links?");
+            Console.WriteLine("[1] Yes, [0] No");
+            var input1 = int.Parse(Console.ReadLine());
+            if (input1 == 1)
             {
-                // Offset the index by the length of the <title>-Tag, to ommit it
-                titleIndex += titleTag.Length;
-                // Find the start of the </title>-End-Tag
-                var titleEndIndex = result.IndexOf("</title>");
-                if (titleEndIndex > titleIndex)
-                {
-                    // Get the string in between both
-                    title = result[titleIndex..titleEndIndex];
-                }
-            }
-            // ======= FindTextBetweenTags Function END ========
-            Console.WriteLine("Title: " + title);
 
-            var titleText = FindTextBetweenTags(result, "<title>", "</title>");
-            Console.WriteLine(result);
-            Console.ReadKey();
-            */
+            }
+        }
+    }
+}         
